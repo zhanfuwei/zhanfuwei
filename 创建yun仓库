@@ -1,0 +1,44 @@
+## 创建本地yum仓库
+ 
+ 一  创建需要用到的相关目录
+
+&ensp;&ensp;1 /mnt/dvd1和/mnt/dvd2 用于挂载centos镜像  
+&ensp;&ensp;2 /mnt/dvd3 放置合并后的镜像文件  
+&ensp;&ensp;3 /mnt/iso 放置原始的centos镜像文件  
+&ensp;&ensp;4 mkdir -p /mnt/dvd1 /mnt/dvd2  /mnt/dvd3 /mnt/iso 创建目录命令  
+
+二 上传本地机器上的两个dvd镜像文件到centos服务器，再分别挂载到相应目录 
+
+&ensp;&ensp;1 mount //本地机器ip/共享目录名 /centos服务器相应目录/centos -o username=本地机器用户名,password=本地机器密码,nounix,noserverino    
+&ensp;&ensp;2 将两个原始镜像文件拷贝到/mnt/iso目录  
+&ensp;&ensp;3 mount -o loop /mnt/iso/CentOS-6.5-x86_64-bin-DVD1.iso /mnt/dvd1    
+&ensp;&ensp;4 mount -o loop /mnt/iso/CentOS-6.5-x86_64-bin-DVD2.iso /mnt/dvd2  
+三 拷贝文件   
+
+&ensp;&ensp;1 首先，拷贝/mnt/dvd1下的所有文件到/mnt/dvd3目录下，然后，只拷贝/mnt/dvd2下Packages目录的所有rpm文件到/mnt/dvd3/Packages目录下  
+&ensp;&ensp;2 cp -av /mnt/dvd1/* /mnt/dvd3/  
+&ensp;&ensp;3 cp -av /mnt/dvd2/Packages/*.rpm /mnt/dvd3/Packages/  
+
+四 合并TRANS.TBL  
+
+&ensp;&ensp;1 将/mnt/dvd2中TRANS.TBL的信息追加到/mnt/dvd1中TRANS.TBL后面，并排序保存  
+&ensp;&ensp;2 cat /mnt/dvd2/Packages/TRANS.TBL >> /mnt/dvd3/Packages/TRANS.TBL  
+&ensp;&ensp;3 mv /mnt/dvd3/Packages/{TRANS.TBL,TRANS.TBL.BAK}  
+&ensp;&ensp;4 sort /mnt/dvd3/Packages/TRANS.TBL.BAK > /mnt/dvd3/Packages/TRANS.TBL  
+&ensp;&ensp;5 rm -rf /mnt/dvd3/Packages/TRANS.TBL.BAK  
+&ensp;&ensp;6 /mnt/dvd3已经是合并后的目录了，可以用作本地yum源
+
+五 备份YUM配置文件  
+
+&ensp;&ensp;1 cd /etc/yum.repos.d  
+&ensp;&ensp;2 rename .repo .repo.bak *.repo
+
+六 生成新的YUM配置文件
+
+&ensp;&ensp;1 vi /etc/yum.repos.d/CentOS-Media.repo
+
+七 更新YUM源 
+
+&ensp;&ensp;1 yum clean all  
+&ensp;&ensp;2 yum upgrade
+
