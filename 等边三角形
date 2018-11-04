@@ -1,0 +1,37 @@
+## 等边三角新
+[root@centos7 ~]# cat sanjiaoxing.sh   
+
+#!/bin/bash<br    
+
+read -p "请输入等边三角形一条边的长度：" long
+
+for ((a=1;a<=long;a++))  
+do  
+### echo -n "             "
+### for (( b=$long;b>a;b--)) #控制空格输出
+### do   
+ &ensp; &ensp; &ensp; &ensp; echo  -n " "  
+### done
+### for c in `seq 1 $a` #输出所在行数相同的数字个数
+### do
+ &ensp; &ensp; &ensp; &ensp;echo -n "$a"  
+### done
+### for d in `seq 2 $a`   #输出所在行数减一的数字个数
+### do
+ &ensp; &ensp; &ensp; &ensp;echo -n "$a"
+### done   
+### echo "" 
+done
+
+ 
+ 结果如下：  
+[root@centos7 ~]# bash sanjiaoxing.sh  
+请输入等边三角形一条边的长度：8  
+ &ensp; &ensp; &ensp; &ensp; &ensp; &ensp; &ensp;1  
+ &ensp; &ensp; &ensp; &ensp; &ensp; &ensp;222   
+ &ensp; &ensp; &ensp; &ensp; &ensp;33333  
+ &ensp; &ensp; &ensp; &ensp;4444444  
+ &ensp; &ensp; &ensp;555555555  
+ &ensp; &ensp;66666666666  
+ &ensp;7777777777777  
+888888888888888
