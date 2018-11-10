@@ -1,0 +1,152 @@
+### AWK
+
+ awk 介绍  
+  awk是由Aho，Weinberger,Kernighan三位开发者名称首字母命名  
+  awk有强大的报表生成能力，可以对文本做格式化输出  
+  awk版本：New awk（nawk）;GNU awk（gawk ） 
+
+  基本用法：  
+   &ensp;   awk [options] 'program'       var=value  file...   
+ &ensp;   program 通常被放到单引号内  
+ &ensp;  Program：pattern{action statements;..}  
+ &ensp;   pattern和action  
+     &ensp;&ensp;&ensp;pattern部分决定动作语句何时触发及触发事件  
+          &ensp;&ensp;&ensp;&ensp; BEGIN  常用于加表头  
+          &ensp;&ensp;&ensp;&ensp; END    常用于汇总  
+        &ensp; action statements对数据进行处理，放在{}内指明  
+          &ensp;&ensp;  print,printf  
+
+  选项：  
+       &ensp;&ensp; -F  "分隔符"      指明输入时用到的字段分隔符  
+       &ensp;&ensp; -v  var=value     变量赋值  
+
+  分隔符.域和记录  
+       &ensp; 域：awk执行时，由分隔符分隔得字段称为域。$1,$2...$n称为域标记。 $0为所有域。    
+           &ensp; 注意：此时于shell中变量$符含义不同
+        记录：文件每一行称为记录
+        如果省略action，则默认执行 print $0 的操作   
+
+  awk工作原理  
+    &ensp; 第一步：执行BEGIN{action;… }语句块中的语句   
+    &ensp; 第二步：从文件或标准输入(stdin)读取一行，然后执行pattern{ action;… }语句块， 它逐行扫描文件，从第一行到最后一行重复这个过程，直到文件全部被读取完毕。   
+    &ensp; 第三步：当读至输入流末尾时，执行END{action;…}语句块   
+   &ensp;  BEGIN语句块在awk开始从输入流中读取行之前被执行，这是一个可选的语句块， 比如变量初始化、打印输出表格的表头等语句通常可以写在BEGIN语句块中      
+    &ensp; END语句块在awk从输入流中读取完所有的行之后即被执行，比如打印所有行的 分析结果这类信息汇总都是在END语句块中完成，它也是一个可选语句块      
+    &ensp; pattern语句块中的通用命令是最重要的部分，也是可选的。如果没有提供 pattern语句块，则默认执行{ print }，即打印每一个读取到的行，awk读取的每 一行都会执行该语句块   
+  &ensp; print格式：print item1, item2, ... 
+
+要点：  
+&ensp;(1) 逗号分隔符  
+&ensp;(2) 输出item可以字符串，也可是数值；当前记录的字段、变量或awk的表达式  
+&ensp;(3) 如省略item，相当于print $0  
+示例：   
+&ensp; awk '{print "hello,awk"}'  
+&ensp; awk –F: '{print}' /etc/passwd  
+&ensp; awk –F: ‘{print “wang”}’ /etc/passwd  
+&ensp; awk –F: ‘{print $1}’ /etc/passwd  
+ &ensp; awk –F: ‘{print $0}’ /etc/passwd  
+ &ensp; awk –F: ‘{print $1”\t”$3}’ /etc/passwd  
+ &ensp; grep “^UUID”/etc/fstab | awk ‘{print $2,$4}’  
+
+  awk变量  
+   &ensp;变量：内置和自定义变量  
+ &ensp; FS：输入字段分隔符，默认为空白字符  
+    &ensp;&ensp; awk -v FS=':' '{print $1,FS,$3}’   /etc/passwd  
+    &ensp;&ensp; awk –F: '{print $1,$3,$7}’ /etc/passwd   
+ &ensp; OFS：输出字段分隔符，默认为空白字符  
+  &ensp;&ensp;  awk -v FS=‘:’ -v OFS=‘:’ '{print $1,$3,$7}’ /etc/passwd  
+ &ensp; RS：输入记录分隔符，指定输入时的换行符  
+   &ensp;&ensp; awk -v RS=' ' ‘{print }’ /etc/passwd  
+ &ensp; ORS：输出记录分隔符，输出时用指定符号代替换行符  
+   &ensp;&ensp;  awk -v RS=' ' -v ORS='###'‘{print }’ /etc/passwd  
+ &ensp; NF：字段数量  
+   &ensp;&ensp; awk -F：‘{print NF}’ /etc/fstab 引用变量时，变量前不需加$  
+    &ensp;&ensp; awk -F：‘{print $(NF-1)}' /etc/passwd  
+ &ensp; NR：记录号  
+   &ensp;&ensp; awk ‘{print NR}’ /etc/fstab ; awk END‘{print NR}’ /etc/fstab  
+   &ensp; FNR：各文件分别计数,记录号   
+    &ensp;&ensp; awk '{print FNR}' /etc/fstab /etc/inittab  
+&ensp; FILENAME：当前文件名  
+   &ensp;&ensp;  awk '{print FILENAME}’ /etc/fstab
+&ensp; ARGC：命令行参数的个数   
+  &ensp;&ensp;  awk '{print ARGC}’ /etc/fstab /etc/inittab    
+   &ensp;&ensp;  awk ‘BEGIN {print ARGC}’ /etc/fstab /etc/inittab     
+&ensp; ARGV：数组，保存的是命令行所给定的各参数  
+   &ensp;&ensp;  awk ‘BEGIN {print ARGV[0]}’ /etc/fstab /etc/inittab  
+   &ensp;&ensp; awk ‘BEGIN {print ARGV[1]}’ /etc/fstab /etc/inittab  
+ 
+ &ensp; 自定义变量(区分字符大小写)  
+   &ensp;&ensp; (1) -v var=value  
+   &ensp;&ensp; (2) 在program中直接定义  
+ &ensp; 示例：  
+   &ensp;&ensp; awk -v test='hello gawk' '{print test}' /etc/fstab  
+    &ensp;&ensp; awk -v test='hello gawk' 'BEGIN{print test}'  
+   &ensp;&ensp; awk 'BEGIN{test="hello,gawk";print test}'  
+   &ensp;&ensp; awk -F:‘{sex=“male”;print $1,sex,aage=18}’ /etc/passwd  
+   &ensp;&ensp; cat awkscript  
+   &ensp;&ensp; {print script,$1,$2}  
+    &ensp;&ensp; awk -F: -f awkscript script=“awk” /etc/passwd  
+
+ &ensp; printf 命令  
+  &ensp; &ensp; 格式化输出：printf “FORMAT”, item1, item2, ...  
+   &ensp;&ensp;&ensp;&ensp; (1) 必须指定FORMAT  
+  &ensp;&ensp;&ensp;&ensp;  (2) 不会自动换行，需要显式给出换行控制符，\n  
+ &ensp;&ensp;&ensp;&ensp;   (3) FORMAT中需要分别为后面每个item指定格式符 
+
+ &ensp; 格式符：与item一一对应  
+ &ensp;&ensp;   %c：显示字符的ASCII码   
+   &ensp;&ensp; %d, %i：显示十进制整数  
+   &ensp;&ensp; %e, %E：显示科学计数法数值  
+  &ensp;&ensp;  %f：显示为浮点数  
+  &ensp;&ensp;  %g, %G：以科学计数法或浮点形式显示数值  
+ &ensp;&ensp;   %s：显示字符串  
+ &ensp;&ensp;   %u：无符号整数  
+ &ensp;&ensp;   %%：显示%自身  
+
+ &ensp; 修饰符  
+   &ensp;&ensp; #[.#] 第一个数字控制显示的宽度；第二个#表示小数点后精度，%3.1f   
+    &ensp;&ensp; - 左对齐（默认右对齐） %-15s  
+   &ensp;&ensp; + 显示数值的正负符号 %+d 
+
+&ensp;  printf 示例  
+ &ensp;&ensp;  awk -F: ‘{printf "%s",$1}’ /etc/passwd  
+ &ensp;&ensp;  awk -F: ‘{printf "%s\n",$1}’ /etc/passwd  
+&ensp;&ensp;   awk -F: '{printf "%-20s %10d\n",$1,$3}' /etc/passwd  
+ &ensp;&ensp;  awk -F:‘ {printf "Username: %s\n",$1}’ /etc/passwd  
+  &ensp;&ensp; awk -F: ‘{printf “Username: %s,UID:%d\n",$1,$3}’ /etc/passwd  
+ &ensp;&ensp;  awk -F: ‘{printf "Username: %15s, UID:%d\n",$1,$3}’ /etc/passwd  
+ &ensp;&ensp;  awk -F: ‘{printf "Username: %-15s,UID:%d\n",$1,$3}’ /etc/passwd 
+
+  操作符  
+   &ensp; 算术操作符：  
+   &ensp;&ensp; x+y, x-y, x*y, x/y, x^y, x%y  
+   &ensp;&ensp; - x：转换为负数  
+   &ensp;&ensp; +x：将字符串转换为数值    
+ &ensp; 字符串操作符：没有符号的操作符，字符串连接  
+ &ensp; 赋值操作符：  
+ &ensp;&ensp;   =, +=, -=, *=, /=, %=, ^=，++, --   
+ &ensp; 比较操作符：  
+   &ensp;&ensp; ==, !=, >, >=, <, <=  
+
+&ensp; 模式匹配符：  
+ &ensp;&ensp;   ~：左边是否和右边匹配，包含  
+ &ensp;&ensp;  !~：是否不匹配  
+ &ensp; 示例：  
+  &ensp;&ensp; awk -F: '$0 ~ /root/{print $1}‘ /etc/passwd  
+  &ensp;&ensp; awk '$0~“^root"' /etc/passwd  
+  &ensp;&ensp; awk '$0 !~ /root/‘ /etc/passwd  
+ &ensp;&ensp;  awk -F: ‘$3==0’ /etc/passwd  
+
+  &ensp; 逻辑操作符：与&&，或||，非!  
+&ensp; 示例：  
+   &ensp;&ensp; awk -F: '$3>=0 && $3<=1000 {print $1}' /etc/passwd  
+   &ensp;&ensp; awk -F: '$3==0 || $3>=1000 {print $1}' /etc/passwd  
+   &ensp;&ensp; awk -F: ‘!($3==0) {print $1}' /etc/passwd  
+   &ensp;&ensp; awk -F: ‘!($3>=500) {print $3}’ /etc/passwd  
+
+&ensp; 条件表达式（三目表达式）  
+  &ensp;&ensp; selector?if-true-expression:if-false-expression  
+ &ensp; 示例：  
+  &ensp;&ensp;  awk -F: '{$3>=1000?usertype="Common User":usertype=" SysUser";printf "%15s:%-s\n",$1,usertype}' /etc/passwd
+
+　　
